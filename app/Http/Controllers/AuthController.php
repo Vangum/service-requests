@@ -23,7 +23,7 @@ class AuthController extends Controller
 
         User::create($validated);
 
-        return redirect()->back();
+        return redirect()->route('login');
     }
 
     public function showLoginForm(): Response
@@ -37,7 +37,7 @@ class AuthController extends Controller
 
         if (auth()->attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended('login');
+            return redirect()->route('ticketsIndex');
         }
 
         return redirect()->back()->withErrors([

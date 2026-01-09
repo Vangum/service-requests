@@ -22,6 +22,7 @@ return new class extends Migration
             $table->foreignId('assigned_to')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamp('completed_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('task_comments', function (Blueprint $table) {
@@ -30,6 +31,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->text('comment');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

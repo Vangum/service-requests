@@ -2,64 +2,65 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\TicketRequest;
+use Illuminate\Http\RedirectResponse;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
+use Inertia\Response;
+use Inertia\Inertia;
 
 class TicketController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): Response
     {
-        //
+        return Inertia::render('Ticket/Index', [
+            'tickets' => Ticket::with('user')->latest()->get(),
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(): Response
     {
-        //
+        return Inertia::render('Ticket/Create', []);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(TicketRequest $request): RedirectResponse
     {
-        //
+        $validated = $request->validated();
+
+        Ticket::create([
+            'user_id' => auth()->id(),
+            'reason' => $validated['reason'],
+            'location' => $validated['location'],
+            'resolution_notes' => $validated['resolution_notes'] ?? null,
+        ]);
+
+        return redirect()->route('ticketsIndex');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Ticket $ticket)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Ticket $ticket)
     {
-        //
+        return Inertia::render('Ticket/Edit', [
+            'ticket' => $ticket,
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Ticket $ticket)
+    public function update(TicketRequest $request, Ticket $ticket): RedirectResponse
     {
-        //
+        $validated = $request->validated();
+
+        $ticket->update([
+            'reason' => $validated['reason'],
+            'location' => $validated['location'],
+            'resolution_notes' => $validated['resolution_notes'] ?? null,
+        ]);
+
+        return redirect()->route('ticketsIndex');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Ticket $ticket)
+    public function destroy(Ticket $ticket): RedirectResponse
     {
-        //
+        $ticket->delete();
+
+        return redirect()->route('ticketsIndex');
     }
 }

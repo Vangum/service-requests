@@ -14,12 +14,13 @@ return new class extends Migration
         Schema::create('tickets', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->text('reason');
+            $table->string('reason');
             $table->string('location');
-            $table->enum('status', ['open', 'completed', 'closed'])->default('open');
+            $table->enum('status', ['new', 'completed', 'closed'])->default('new');
             $table->text('resolution_notes')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('ticket_comments', function (Blueprint $table) {
@@ -28,6 +29,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->text('comment');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

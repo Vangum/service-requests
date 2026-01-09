@@ -6,6 +6,8 @@ import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {loginAction, register} from "@/routes";
 import {Checkbox} from "@/components/ui/checkbox";
+import {Label} from "@/components/ui/label";
+import {Spinner} from "@/components/ui/spinner";
 
 const form = useForm({
     username: '',
@@ -44,7 +46,8 @@ const form = useForm({
                     </FieldGroup>
                 </FieldSet>
                 <Field>
-                    <Button type="submit">
+                    <Button type="submit" :disabled="form.processing">
+                        <Spinner v-if="form.processing" />
                         Войти
                     </Button>
                     <div class="text-center text-sm text-muted-foreground">
