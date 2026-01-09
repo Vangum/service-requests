@@ -4,12 +4,14 @@ import {Field, FieldError, FieldGroup, FieldLabel, FieldSet,} from '@/components
 import {Head, Link, useForm} from '@inertiajs/vue3';
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
+import {registerAction} from "@/routes";
 
 const form = useForm({
     name: '',
     username: '',
     email: '',
     password: '',
+    password_confirmation: '',
 })
 </script>
 
@@ -20,7 +22,7 @@ const form = useForm({
     >
         <Head title="Регистрация" />
         
-        <form action="">
+        <form @submit.prevent="form.post(registerAction().url)">
             <FieldGroup>
                 <FieldSet>
                     <FieldGroup>
@@ -49,20 +51,19 @@ const form = useForm({
                             <FieldError v-if="form.errors.password" :errors="[form.errors.password]" />
                         </Field>
                         <!-- Повторный ввод пароля -->
-                        <Field :data-invalid="!!form.errors.password">
-                            <FieldLabel for="password">Повторите пароль</FieldLabel>
-                            <Input v-model="form.password" :aria-invalid="!!form.errors.password" id="password" type="password" required />
-                            <FieldError v-if="form.errors.password" :errors="[form.errors.password]" />
+                        <Field>
+                            <FieldLabel for="password_confirmation">Повторите пароль</FieldLabel>
+                            <Input v-model="form.password_confirmation" id="password_confirmation" type="password" required />
                         </Field>
                     </FieldGroup>
                 </FieldSet>
                 <Field>
                     <Button type="submit">
-                        Сохранить
+                        Зарегистрироваться
                     </Button>
                     <div class="text-center text-sm text-muted-foreground">
-                        У вас нет учетной записи?
-                        <Link class="text-foreground underline decoration-zinc-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-zinc-500">Зарегистрироваться</Link>
+                        У вас уже есть учетная запись?
+                        <Link class="text-foreground underline decoration-zinc-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-zinc-500">Войти</Link>
                     </div>
                 </Field>
             </FieldGroup>
