@@ -4,7 +4,7 @@ import {Field, FieldError, FieldGroup, FieldLabel, FieldSet,} from '@/components
 import {Head, Link, useForm} from '@inertiajs/vue3';
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
-import {registerAction} from "@/routes";
+import {login, registerAction} from "@/routes";
 
 const form = useForm({
     name: '',
@@ -63,7 +63,7 @@ const form = useForm({
                     </Button>
                     <div class="text-center text-sm text-muted-foreground">
                         У вас уже есть учетная запись?
-                        <Link class="text-foreground underline decoration-zinc-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-zinc-500">Войти</Link>
+                        <Link :href="login().url" class="text-foreground underline decoration-zinc-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-zinc-500">Войти</Link>
                     </div>
                 </Field>
             </FieldGroup>
