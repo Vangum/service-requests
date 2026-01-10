@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\WorkerController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -16,6 +17,8 @@ Route::controller(AuthController::class)->group(function () {
 
     Route::get('/login', 'showLoginForm')->name('login');
     Route::post('/login', 'login')->name('loginAction');
+
+    Route::post('/logout', 'logout')->name('logout');
 });
 
 Route::controller(TicketController::class)->group(function () {
@@ -35,4 +38,12 @@ Route::controller(TaskController::class)->group(function () {
     Route::get('/tasks/{task}/edit', 'edit')->name('tasksEdit');
     Route::put('/tasks/{task}', 'update')->name('tasksUpdate');
     Route::delete('/tasks/{task}', 'destroy')->name('tasksDestroy');
+});
+
+Route::controller(WorkerController::class)->group(function () {
+    Route::get('/dashboard', 'index')->name('workersIndex');
+    Route::put('/dashboard/tickets/{ticket}/complete', 'completeTicket')->name('completeTicket');
+    Route::put('/dashboard/tickets/{ticket}/closed', 'closedTicket')->name('closedTicket');
+    Route::put('/dashboard/tasks/{task}/complete', 'completeTask')->name('completeTask');
+    Route::put('/dashboard/tasks/{task}/status', 'cancelledTask')->name('cancelledTask');
 });

@@ -4,6 +4,7 @@ import {DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSepa
 import type {User} from '@/types';
 import {Link, router} from '@inertiajs/vue3';
 import {LogOut, Settings} from 'lucide-vue-next';
+import {logout} from "@/routes";
 
 interface Props {
     user: User;
@@ -35,7 +36,7 @@ defineProps<Props>();
     <DropdownMenuItem :as-child="true">
         <Link
             class="block w-full"
-            href="/"
+            :href="logout()"
             @click="handleLogout"
             as="button"
             data-test="logout-button"
