@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TicketController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -25,4 +26,13 @@ Route::controller(TicketController::class)->group(function () {
     Route::get('/tickets/{ticket}/edit', 'edit')->name('ticketsEdit');
     Route::put('/tickets/{ticket}', 'update')->name('ticketsUpdate');
     Route::delete('/tickets/{ticket}', 'destroy')->name('ticketsDestroy');
+});
+
+Route::controller(TaskController::class)->group(function () {
+    Route::get('/tasks', 'index')->name('tasksIndex');
+    Route::get('/tasks/create', 'create')->name('tasksCreate');
+    Route::post('/tasks', 'store')->name('tasksStore');
+    Route::get('/tasks/{task}/edit', 'edit')->name('tasksEdit');
+    Route::put('/tasks/{task}', 'update')->name('tasksUpdate');
+    Route::delete('/tasks/{task}', 'destroy')->name('tasksDestroy');
 });

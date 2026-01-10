@@ -2,33 +2,46 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\TaskRequest;
 use App\Models\Task;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class TaskController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): Response
     {
-        //
+        return Inertia::render('Tasks/Index', [
+            'tasks' => Task::with('assignee:id,name')
+                ->where('teacher_id', auth()->id())
+                ->get(),
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(): Response
     {
-        //
+        return Inertia::render('Tasks/Create', [
+            'workers' => User::where('role', 'worker')->get(['id', 'name']),
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(TaskRequest $request): RedirectResponse
     {
-        //
+        $validated = $request->validated();
+
+        Task::create([
+            'teacher_id' => auth()->id(),
+            'description' => $validated['description'],
+            'location' => $validated['location'],
+            'scheduled_at' => $validated['scheduled_at'],
+            'completion_notes' => $validated['completion_notes'] ?? null,
+            'assigned_to' => $validated['assigned_to'],
+        ]);
+
+        return redirect()->route('tasksIndex');
     }
 
     /**

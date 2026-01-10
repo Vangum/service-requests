@@ -53,7 +53,7 @@ const form = useForm({
                             
                             <!-- Примечания -->
                             <Field :data-invalid="!!form.errors.resolution_notes" class="sm:col-span-3">
-                                <div class="space-y-2">
+                                <div class="space-y-[11.5px]">
                                     <div class="flex items-center gap-2">
                                         <FieldLabel for="resolution_notes">Примечания</FieldLabel>
                                         <HoverCard>

@@ -17,7 +17,7 @@ const form = useForm({
 </script>
 
 <template>
-    <Head title="123" />
+    <Head title="Оставить заявку" />
     
     <AppLayout>
         <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4 md:px-36 xl:px-64">
@@ -39,8 +39,8 @@ const form = useForm({
                             
                             <!-- Примечания -->
                             <Field :data-invalid="!!form.errors.resolution_notes" class="sm:col-span-3">
-                                <div class="space-y-2">
-                                    <div class="flex items-center gap-2">
+                                <div class="space-y-[11.5px]">
+                                    <div class="flex items-center gap-1">
                                         <FieldLabel for="resolution_notes">Примечания</FieldLabel>
                                         <HoverCard>
                                             <HoverCardTrigger as-child>

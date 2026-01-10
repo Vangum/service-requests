@@ -53,8 +53,20 @@ const statusLabels: Record<string, string> = {
                 </p>
             </div>
             
+            <div class="flex items-center justify-between gap-8 py-4">
+                <div class="max-w-2xl">
+                    <h4 class="font-medium">Список заявок</h4>
+                    
+                    <p class="mt-1 text-sm text-muted-foreground leading-relaxed">
+                        Здесь отображаются заявки, которые вы создали.
+                    </p>
+                </div>
+                
+                <Button @click="router.get(ticketsCreate().url)" class="shrink-0">Оставить заявку</Button>
+            </div>
+            
             <!-- Таблица -->
-            <div v-else class="rounded-md border">
+            <div class="rounded-md border">
                 <Table class="w-full table-fixed">
                     <TableHeader>
                         <TableRow>

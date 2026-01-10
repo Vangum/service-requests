@@ -13,14 +13,14 @@ class TicketController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('Ticket/Index', [
+        return Inertia::render('Tickets/Index', [
             'tickets' => Ticket::with('user')->latest()->get(),
         ]);
     }
 
     public function create(): Response
     {
-        return Inertia::render('Ticket/Create', []);
+        return Inertia::render('Tickets/Create', []);
     }
 
     public function store(TicketRequest $request): RedirectResponse
@@ -39,7 +39,7 @@ class TicketController extends Controller
 
     public function edit(Ticket $ticket)
     {
-        return Inertia::render('Ticket/Edit', [
+        return Inertia::render('Tickets/Edit', [
             'ticket' => $ticket,
         ]);
     }
