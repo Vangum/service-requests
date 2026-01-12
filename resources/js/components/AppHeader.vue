@@ -6,13 +6,12 @@ import {Button} from '@/components/ui/button';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuTrigger,} from '@/components/ui/dropdown-menu';
 import {NavigationMenu, NavigationMenuItem, NavigationMenuList, navigationMenuTriggerStyle,} from '@/components/ui/navigation-menu';
 import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,} from '@/components/ui/sheet';
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '@/components/ui/tooltip';
 import UserMenuContent from '@/components/UserMenuContent.vue';
 import {getInitials} from '@/composables/useInitials';
 import {toUrl, urlIsActive} from '@/lib/utils';
 import type {NavItem} from '@/types';
 import {InertiaLinkProps, Link, usePage} from '@inertiajs/vue3';
-import {BookOpen, Folder, LayoutGrid, Menu, Search} from 'lucide-vue-next';
+import {MessageSquare, Menu, Calendar, GraduationCap} from 'lucide-vue-next';
 import {computed} from 'vue';
 import {tasksIndex, ticketsIndex, workersIndex} from "@/routes";
 
@@ -31,41 +30,47 @@ const activeItemStyles = computed(
             : '',
 );
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/',
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Мои заявки',
-        href: ticketsIndex().url,
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Мои события',
-        href: tasksIndex().url,
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Задачи',
-        href: workersIndex().url,
-        icon: LayoutGrid,
-    },
-];
+const isAuthenticated = computed(() => !!auth.value?.user);
 
-const rightNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
-    },
-];
+const userRole = computed(() => auth.value?.user?.role);
+const isStudent = computed(() => userRole.value === 'student');
+const isTeacher = computed(() => userRole.value === 'teacher');
+const isWorker = computed(() => userRole.value === 'worker');
+const isAdmin = computed(() => userRole.value === 'admin');
+
+const mainNavItems = computed<NavItem[]>(() => {
+    if (!isAuthenticated.value) {
+        return [];
+    }
+    
+    const items: NavItem[] = [];
+    
+    if (isStudent.value || isTeacher.value || isAdmin.value) {
+        items.push({
+            title: 'Мои заявки',
+            href: ticketsIndex().url,
+            icon: MessageSquare,
+        });
+    }
+    
+    if (isTeacher.value || isAdmin.value) {
+        items.push({
+            title: 'Мои события',
+            href: tasksIndex().url,
+            icon: Calendar,
+        });
+    }
+    
+    if (isWorker.value || isAdmin.value) {
+        items.push({
+            title: 'Заявки и события',
+            href: workersIndex().url,
+            icon: GraduationCap,
+        });
+    }
+    
+    return items;
+});
 </script>
 
 <template>
@@ -85,10 +90,7 @@ const rightNavItems: NavItem[] = [
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="left" class="w-[300px] p-6">
-                            <SheetTitle class="sr-only"
-                            >Navigation Menu
-                            </SheetTitle
-                            >
+                            <SheetTitle class="sr-only">Navigation Menu</SheetTitle>
                             <SheetHeader class="flex justify-start text-left">
                                 <AppLogoIcon
                                     class="size-6 fill-current text-black dark:text-white"
@@ -97,7 +99,7 @@ const rightNavItems: NavItem[] = [
                             <div
                                 class="flex h-full flex-1 flex-col justify-between space-y-4 py-6"
                             >
-                                <nav class="-mx-3 space-y-1">
+                                <nav v-if="isAuthenticated" class="-mx-3 space-y-1">
                                     <Link
                                         v-for="item in mainNavItems"
                                         :key="item.title"
@@ -113,23 +115,6 @@ const rightNavItems: NavItem[] = [
                                         {{ item.title }}
                                     </Link>
                                 </nav>
-                                <div class="flex flex-col space-y-4">
-                                    <a
-                                        v-for="item in rightNavItems"
-                                        :key="item.title"
-                                        :href="toUrl(item.href)"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        class="flex items-center space-x-2 text-sm font-medium"
-                                    >
-                                        <component
-                                            v-if="item.icon"
-                                            :is="item.icon"
-                                            class="h-5 w-5"
-                                        />
-                                        <span>{{ item.title }}</span>
-                                    </a>
-                                </div>
                             </div>
                         </SheetContent>
                     </Sheet>
@@ -140,7 +125,7 @@ const rightNavItems: NavItem[] = [
                 </Link>
                 
                 <!-- Desktop Menu -->
-                <div class="hidden h-full lg:flex lg:flex-1">
+                <div v-if="isAuthenticated" class="hidden h-full lg:flex lg:flex-1">
                     <NavigationMenu class="ml-10 flex h-full items-stretch">
                         <NavigationMenuList
                             class="flex h-full items-stretch space-x-2"
@@ -175,56 +160,8 @@ const rightNavItems: NavItem[] = [
                 </div>
                 
                 <div class="ml-auto flex items-center space-x-2">
-                    <div class="relative flex items-center space-x-1">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            class="group h-9 w-9 cursor-pointer"
-                        >
-                            <Search
-                                class="size-5 opacity-80 group-hover:opacity-100"
-                            />
-                        </Button>
-                        
-                        <div class="hidden space-x-1 lg:flex">
-                            <template
-                                v-for="item in rightNavItems"
-                                :key="item.title"
-                            >
-                                <TooltipProvider :delay-duration="0">
-                                    <Tooltip>
-                                        <TooltipTrigger>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                as-child
-                                                class="group h-9 w-9 cursor-pointer"
-                                            >
-                                                <a
-                                                    :href="toUrl(item.href)"
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                >
-                                                    <span class="sr-only">{{
-                                                            item.title
-                                                        }}</span>
-                                                    <component
-                                                        :is="item.icon"
-                                                        class="size-5 opacity-80 group-hover:opacity-100"
-                                                    />
-                                                </a>
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>{{ item.title }}</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            </template>
-                        </div>
-                    </div>
-                    
-                    <DropdownMenu>
+                    <!-- Аватар (только для авторизованных) -->
+                    <DropdownMenu v-if="isAuthenticated">
                         <DropdownMenuTrigger :as-child="true">
                             <Button
                                 variant="ghost"

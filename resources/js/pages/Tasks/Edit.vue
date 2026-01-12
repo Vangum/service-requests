@@ -6,36 +6,45 @@ import {Head, router, useForm} from '@inertiajs/vue3';
 import {Button} from "@/components/ui/button";
 import {Textarea} from '@/components/ui/textarea';
 import {Input} from "@/components/ui/input";
-import {tasksIndex, tasksStore} from "@/routes";
+import {tasksIndex, tasksUpdate} from "@/routes";
 
 interface User {
     id: number;
     name: string;
 }
 
-const {workers} = defineProps<{
+interface Task {
+    id: number;
+    description: string;
+    assigned_to: number | null;
+    location: string;
+    scheduled_at_for_input: string;
+}
+
+const {workers, task} = defineProps<{
     workers: User[];
+    task: Task;
 }>();
 
 const form = useForm({
-    description: '',
-    assigned_to: null,
-    location: '',
-    scheduled_at: '',
+    description: task.description,
+    assigned_to: task.assigned_to ?? null,
+    location: task.location,
+    scheduled_at: task.scheduled_at_for_input,
 })
 </script>
 
 <template>
-    <Head title="Запланировать событие" />
+    <Head title="Редактирование события" />
     
     <AppLayout>
         <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4 md:px-36 xl:px-64">
-            <form @submit.prevent="form.post(tasksStore().url)">
+            <form @submit.prevent="form.put(tasksUpdate(task.id).url)">
                 <FieldGroup>
                     <FieldSet>
-                        <FieldLegend>Запланировать событие</FieldLegend>
+                        <FieldLegend>Редактирование события</FieldLegend>
                         <FieldDescription>
-                            Пожалуйста, заполните все необходимые поля, чтобы запланировать событие.
+                            Пожалуйста, внесите необходимые изменения и сохраните обновлённую информацию.
                         </FieldDescription>
                         
                         <FieldGroup>
@@ -86,7 +95,7 @@ const form = useForm({
                             Отмена
                         </Button>
                         <Button type="submit">
-                            Отправить
+                            Сохранить
                         </Button>
                     </Field>
                 </FieldGroup>

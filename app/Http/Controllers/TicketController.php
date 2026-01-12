@@ -3,18 +3,35 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TicketRequest;
-use Illuminate\Http\RedirectResponse;
 use App\Models\Ticket;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Response;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class TicketController extends Controller
 {
-    public function index(): Response
+    public function index()
     {
+        $tickets = auth()->user()->tickets()
+            ->with('comments')
+            ->latest()
+            ->get()
+            ->map(function ($ticket) {
+                return [
+                    'id' => $ticket->id,
+                    'title' => $ticket->reason,
+                    'reason' => $ticket->reason,
+                    'location' => $ticket->location,
+                    'status' => $ticket->status,
+                    'resolution_notes' => $ticket->completion_notes,
+                    'comment' => $ticket->comments()->first()?->comment,
+                    'created_at' => $ticket->created_at,
+                ];
+            });
+
         return Inertia::render('Tickets/Index', [
-            'tickets' => Ticket::with('user')->latest()->get(),
+            'tickets' => $tickets,
         ]);
     }
 
@@ -31,7 +48,6 @@ class TicketController extends Controller
             'user_id' => auth()->id(),
             'reason' => $validated['reason'],
             'location' => $validated['location'],
-            'resolution_notes' => $validated['resolution_notes'] ?? null,
         ]);
 
         return redirect()->route('ticketsIndex');
@@ -51,7 +67,6 @@ class TicketController extends Controller
         $ticket->update([
             'reason' => $validated['reason'],
             'location' => $validated['location'],
-            'resolution_notes' => $validated['resolution_notes'] ?? null,
         ]);
 
         return redirect()->route('ticketsIndex');
@@ -62,5 +77,26 @@ class TicketController extends Controller
         $ticket->delete();
 
         return redirect()->route('ticketsIndex');
+    }
+
+    public function addComment(Request $request, Ticket $ticket): RedirectResponse
+    {
+        $validated = $request->validate([
+            'comment' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $existingComment = $ticket->comments()
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if ($existingComment) {
+            $existingComment->update(['comment' => $validated['comment']]);
+        } else {
+            $ticket->comments()->create([
+                'user_id' => auth()->id(),
+                'comment' => $validated['comment'],
+            ]);
+        }
+        return back();
     }
 }

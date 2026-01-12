@@ -19,9 +19,41 @@ class WorkerController extends Controller
             abort(403, 'Доступно только для работников');
         }
 
-        $tickets = Ticket::with('user')->latest()->get();
+        $tickets = Ticket::with(['user', 'comments'])
+            ->orderByRaw("
+            CASE status
+                WHEN 'new' THEN 1
+                ELSE 2
+            END
+        ")
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function ($ticket) {
+                return [
+                    'id' => $ticket->id,
+                    'title' => $ticket->reason,
+                    'reason' => $ticket->reason,
+                    'location' => $ticket->location,
+                    'status' => $ticket->status,
+                    'completion_notes' => $ticket->completion_notes,
+                    'created_at' => $ticket->created_at,
+                    'user' => [
+                        'id' => $ticket->user->id,
+                        'name' => $ticket->user->name,
+                    ],
+                    'comment' => $ticket->comments()->first()?->comment,
+                ];
+            });
 
-        $tasks = Task::with('assignee:id,name')->get();
+        $tasks = Task::with('teacher')
+            ->orderByRaw("
+            CASE status
+                WHEN 'new' THEN 1
+                ELSE 2
+            END
+        ")
+            ->orderByDesc('scheduled_at')
+            ->get();
 
         return Inertia::render('Worker/Index', [
             'tickets' => $tickets,
@@ -31,7 +63,12 @@ class WorkerController extends Controller
 
     public function completeTicket(Request $request, Ticket $ticket): RedirectResponse
     {
+        $validated = $request->validate([
+            'completion_notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
         $ticket->update([
+            'completion_notes' => $validated['completion_notes'],
             'status' => 'completed',
             'completed_at' => now(),
         ]);
@@ -42,15 +79,20 @@ class WorkerController extends Controller
     public function closedTicket(Request $request, Ticket $ticket): RedirectResponse
     {
         $ticket->update([
-            'status' => 'closed',
+            'status' => 'rejected',
         ]);
 
         return redirect()->back();
     }
 
-    public function completeTask(Task $task): RedirectResponse
+    public function completeTask(Request $request, Task $task): RedirectResponse
     {
+        $validated = $request->validate([
+            'completion_notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
         $task->update([
+            'completion_notes' => $validated['completion_notes'],
             'status' => 'completed',
             'completed_at' => now(),
         ]);
@@ -61,7 +103,7 @@ class WorkerController extends Controller
     public function cancelledTask(Task $task): RedirectResponse
     {
         $task->update([
-            'status' => 'cancelled',
+            'status' => 'rejected',
         ]);
 
         return redirect()->back();

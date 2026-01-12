@@ -16,7 +16,14 @@ class TicketRequest extends FormRequest
         return [
             'reason' => ['required', 'string', 'max:255'],
             'location' => ['required', 'string', 'max:255'],
-            'resolution_notes' => ['nullable', 'string', 'max:255'],
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'reason' => 'причина обращения',
+            'location' => 'аудитория',
         ];
     }
 }

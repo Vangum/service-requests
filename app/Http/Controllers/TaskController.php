@@ -37,42 +37,33 @@ class TaskController extends Controller
             'description' => $validated['description'],
             'location' => $validated['location'],
             'scheduled_at' => $validated['scheduled_at'],
-            'completion_notes' => $validated['completion_notes'] ?? null,
             'assigned_to' => $validated['assigned_to'],
         ]);
 
         return redirect()->route('tasksIndex');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Task $task)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Task $task)
     {
-        //
+        return Inertia::render('Tasks/Edit', [
+            'task' => $task,
+            'workers' => User::where('role', 'worker')->get(['id', 'name']),
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Task $task)
+    public function update(TaskRequest $request, Task $task): RedirectResponse
     {
-        //
+        $validated = $request->validated();
+
+        $task->update($validated);
+
+        return redirect()->route('tasksIndex');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Task $task)
+    public function destroy(Task $task): RedirectResponse
     {
-        //
+        $task->delete();
+
+        return redirect()->route('tasksIndex');
     }
 }

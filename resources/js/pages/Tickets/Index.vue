@@ -11,21 +11,26 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
+import {Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table';
-import {Pen, Trash} from 'lucide-vue-next';
-import {Head, Link, router} from '@inertiajs/vue3';
-import {ticketsCreate, ticketsDestroy, ticketsEdit} from "@/routes";
+import {Pen, Trash, MessageCircle} from 'lucide-vue-next';
+import {Head, Link, router, useForm} from '@inertiajs/vue3';
+import {ticketsCreate, ticketsDestroy, ticketsEdit, ticketsComment} from "@/routes";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card";
+import {Textarea} from "@/components/ui/textarea";
+import {ref} from "vue";
+import {Field, FieldError, FieldLabel} from "@/components/ui/field";
 
 interface Ticket {
     id: number;
     title: string;
     reason: string;
     location: string;
-    status: 'new' | 'completed' | 'closed';
+    status: 'new' | 'completed' | 'rejected';
     resolution_notes?: string;
+    comment?: string;
     created_at: string;
 }
 
@@ -36,7 +41,33 @@ const {tickets} = defineProps<{
 const statusLabels: Record<string, string> = {
     'new': 'Новая',
     'completed': 'Выполнена',
-    'closed': 'Закрыта'
+    'rejected': 'Отклонена'
+};
+
+const showCommentDialog = ref(false);
+const selectedTicket = ref<Ticket | null>(null);
+const commentForm = useForm({
+    comment: '',
+});
+
+const openCommentDialog = (ticket: Ticket) => {
+    selectedTicket.value = ticket;
+    commentForm.comment = ticket.comment ?? '';
+    showCommentDialog.value = true;
+};
+
+const saveComment = () => {
+    if (!selectedTicket.value) return;
+
+    commentForm.post(ticketsComment(selectedTicket.value.id).url, {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => {
+            showCommentDialog.value = false;
+            commentForm.reset();
+            selectedTicket.value = null;
+        },
+    });
 };
 </script>
 
@@ -72,16 +103,17 @@ const statusLabels: Record<string, string> = {
                         <TableHeader>
                             <TableRow>
                                 <TableHead class="w-[50px]">ID</TableHead>
-                                <TableHead class="w-[300px]">Причина обращения</TableHead>
-                                <TableHead class="w-[300px]">Примечания</TableHead>
-                                <TableHead class="w-[200px]">Аудитория</TableHead>
+                                <TableHead class="w-[250px]">Причина обращения</TableHead>
+                                <TableHead class="w-[150px]">Аудитория</TableHead>
                                 <TableHead class="w-[100px]">Статус</TableHead>
-                                <TableHead class="w-[120px] text-right">Действия</TableHead>
+                                <TableHead class="w-[250px]">Заметки о выполнении</TableHead>
+                                <TableHead class="w-[200px]">Комментарий</TableHead>
+                                <TableHead class="w-[100px] text-right">Действия</TableHead>
                             </TableRow>
                         </TableHeader>
                         
                         <TableBody>
-                            <TableRow v-for="ticket in tickets" :key="ticket.id">
+                            <TableRow v-for="ticket in tickets" :key="ticket.id" :class="{'opacity-50': ticket.status !== 'new'}">
                                 <TableCell class="align-middle">
                                     {{ ticket.id }}
                                 </TableCell>
@@ -107,8 +139,23 @@ const statusLabels: Record<string, string> = {
                                     </div>
                                 </TableCell>
                                 
+                                <!-- Аудитория -->
+                                <TableCell class="align-middle">
+                                    <div class="truncate">
+                                        {{ ticket.location }}
+                                    </div>
+                                </TableCell>
                                 
-                                <!-- Примечания -->
+                                <!-- Статус -->
+                                <TableCell class="align-middle">
+                                    <Badge
+                                        :variant="ticket.status === 'new' ? 'outline' : ticket.status === 'completed' ? 'default' : 'secondary'"
+                                    >
+                                        {{ statusLabels[ticket.status] }}
+                                    </Badge>
+                                </TableCell>
+                                
+                                <!-- Заметки о выполнении -->
                                 <TableCell class="align-middle">
                                     <HoverCard v-if="ticket.resolution_notes && ticket.resolution_notes.length >= 50">
                                         <HoverCardTrigger as-child>
@@ -129,16 +176,29 @@ const statusLabels: Record<string, string> = {
                                     </div>
                                 </TableCell>
                                 
+                                <!-- Комментарий -->
                                 <TableCell class="align-middle">
-                                    {{ ticket.location }}
-                                </TableCell>
-                                
-                                <TableCell class="align-middle">
-                                    <Badge
-                                        :variant="ticket.status === 'new' ? 'outline' : 'secondary'"
-                                    >
-                                        {{ statusLabels[ticket.status] }}
-                                    </Badge>
+                                    <HoverCard v-if="ticket.comment && ticket.comment.length >= 50">
+                                        <HoverCardTrigger as-child>
+                                            <div class="truncate cursor-pointer">
+                                                {{ ticket.comment }}
+                                            </div>
+                                        </HoverCardTrigger>
+                                        
+                                        <HoverCardContent class="w-96">
+                                            <p class="text-sm whitespace-normal break-words">
+                                                {{ ticket.comment }}
+                                            </p>
+                                        </HoverCardContent>
+                                    </HoverCard>
+                                    
+                                    <div v-else-if="ticket.comment" class="truncate">
+                                        {{ ticket.comment }}
+                                    </div>
+                                    
+                                    <div v-else class="text-muted-foreground">
+                                        –
+                                    </div>
                                 </TableCell>
                                 
                                 <TableCell class="align-middle text-right">
@@ -183,6 +243,24 @@ const statusLabels: Record<string, string> = {
                                                 </AlertDialogFooter>
                                             </AlertDialogContent>
                                         </AlertDialog>
+                                        
+                                        <Button
+                                            @click="openCommentDialog(ticket)"
+                                            :variant="ticket.comment ? 'default' : 'outline'"
+                                            size="icon"
+                                            class="h-8 w-8"
+                                            :disabled="ticket.status !== 'completed'"
+                                            :title="
+                                                ticket.status === 'completed'
+                                                    ? (ticket.comment ? 'Редактировать комментарий' : 'Добавить комментарий')
+                                                    : 'Комментарий доступен только для выполненных заявок'
+                                            "
+                                            aria-label="Комментарий"
+                                        >
+                                            <MessageCircle
+                                                class="w-4 h-4"
+                                            />
+                                        </Button>
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -192,4 +270,39 @@ const statusLabels: Record<string, string> = {
             </div>
         </div>
     </AppLayout>
+    
+    <!-- Dialog для добавления/редактирования комментария -->
+    <Dialog v-model:open="showCommentDialog">
+        <DialogContent v-if="selectedTicket" class="sm:max-w-[525px]">
+            <form @submit.prevent="saveComment">
+                <DialogHeader>
+                    <DialogTitle>Комментарий к заявке</DialogTitle>
+                    <DialogDescription>Добавьте ваш комментарий к выполненной заявке.</DialogDescription>
+                </DialogHeader>
+                
+                <div class="my-8">
+                    <Field :data-invalid="!!commentForm.errors.comment">
+                        <FieldLabel for="reason">Комментарий</FieldLabel>
+                        <Textarea v-model="commentForm.comment" :aria-invalid="!!commentForm.errors.comment" id="comment" class="resize-none" required />
+                        <FieldError v-if="commentForm.errors.comment" :errors="[commentForm.errors.comment]" />
+                    </Field>
+                    <p class="text-xs text-muted-foreground mt-2">
+                        {{ commentForm.comment.length }}/255
+                    </p>
+                </div>
+                
+                <DialogFooter>
+                    <DialogClose as-child>
+                        <Button variant="outline">Отмена</Button>
+                    </DialogClose>
+                    <Button
+                        type="submit"
+                        :disabled="commentForm.processing"
+                    >
+                        {{ selectedTicket.comment ? 'Обновить' : 'Добавить' }}
+                    </Button>
+                </DialogFooter>
+            </form>
+        </DialogContent>
+    </Dialog>
 </template>

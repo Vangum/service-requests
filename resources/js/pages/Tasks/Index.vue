@@ -14,7 +14,7 @@ import {
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table';
 import {Pen, Trash} from 'lucide-vue-next';
 import {Head, Link, router} from '@inertiajs/vue3';
-import {tasksCreate, tasksEdit, ticketsDestroy} from "@/routes";
+import {tasksCreate, tasksDestroy, tasksEdit} from "@/routes";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card";
@@ -24,7 +24,7 @@ interface Task {
     description: string;
     location: string;
     scheduled_at_formatted: string;
-    status: 'scheduled' | 'completed' | 'cancelled';
+    status: 'new' | 'completed' | 'rejected';
     completion_notes?: string;
     assignee?: {
         id: number;
@@ -37,9 +37,9 @@ const {tasks} = defineProps<{
 }>();
 
 const statusLabels: Record<string, string> = {
-    'scheduled': 'Запланировано',
+    'new': 'Запланировано',
     'completed': 'Завершена',
-    'cancelled': 'Отменена'
+    'rejected': 'Отменена'
 };
 </script>
 
@@ -77,9 +77,9 @@ const statusLabels: Record<string, string> = {
                                 <TableHead class="w-[200px]">Задача</TableHead>
                                 <TableHead>Место проведения</TableHead>
                                 <TableHead>Дата и время</TableHead>
-                                <TableHead class="w-[200px]">Примечания</TableHead>
                                 <TableHead>Лаборант</TableHead>
                                 <TableHead>Статус</TableHead>
+                                <TableHead class="w-[200px]">Заметки о выполнении</TableHead>
                                 <TableHead class="w-[120px] text-right">Действия</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -121,6 +121,20 @@ const statusLabels: Record<string, string> = {
                                     {{ task.scheduled_at_formatted }}
                                 </TableCell>
                                 
+                                <!-- Лаборант -->
+                                <TableCell class="align-middle">
+                                    {{ task.assignee?.name ?? '—' }}
+                                </TableCell>
+                                
+                                <!-- Статус -->
+                                <TableCell class="align-middle">
+                                    <Badge
+                                        :variant="task.status === 'new' ? 'outline' : 'secondary'"
+                                    >
+                                        {{ statusLabels[task.status] }}
+                                    </Badge>
+                                </TableCell>
+                                
                                 <!-- Примечания -->
                                 <TableCell class="align-middle">
                                     <HoverCard v-if="task.completion_notes && task.completion_notes.length >= 50">
@@ -140,19 +154,6 @@ const statusLabels: Record<string, string> = {
                                     <div v-else class="truncate">
                                         {{ task.completion_notes ?? '–' }}
                                     </div>
-                                </TableCell>
-                                
-                                <!-- Лаборант -->
-                                <TableCell class="align-middle">
-                                    {{ task.assignee?.name ?? '—' }}
-                                </TableCell>
-                                
-                                <TableCell class="align-middle">
-                                    <Badge
-                                        :variant="task.status === 'scheduled' ? 'outline' : 'secondary'"
-                                    >
-                                        {{ statusLabels[task.status] }}
-                                    </Badge>
                                 </TableCell>
                                 
                                 <TableCell class="align-middle text-right">
@@ -180,10 +181,10 @@ const statusLabels: Record<string, string> = {
                                             <AlertDialogContent>
                                                 <AlertDialogHeader>
                                                     <AlertDialogTitle>
-                                                        Удалить заявку?
+                                                        Удалить событие?
                                                     </AlertDialogTitle>
                                                     <AlertDialogDescription>
-                                                        Вы уверены, что хотите удалить эту заявку? Это действие нельзя отменить.
+                                                        Вы уверены, что хотите удалить это событие? Это действие нельзя отменить.
                                                     </AlertDialogDescription>
                                                 </AlertDialogHeader>
                                                 
@@ -191,7 +192,7 @@ const statusLabels: Record<string, string> = {
                                                     <AlertDialogCancel>
                                                         Отмена
                                                     </AlertDialogCancel>
-                                                    <AlertDialogAction @click="router.delete(ticketsDestroy(task.id).url)">
+                                                    <AlertDialogAction @click="router.delete(tasksDestroy(task.id).url)">
                                                         Удалить
                                                     </AlertDialogAction>
                                                 </AlertDialogFooter>

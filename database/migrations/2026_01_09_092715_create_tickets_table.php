@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('reason');
             $table->string('location');
-            $table->enum('status', ['new', 'completed', 'closed'])->default('new');
-            $table->text('resolution_notes')->nullable();
+            $table->enum('status', ['new', 'completed', 'rejected'])->default('new');
+            $table->text('completion_notes')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
@@ -27,7 +27,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('ticket_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->text('comment');
+            $table->text('comment')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

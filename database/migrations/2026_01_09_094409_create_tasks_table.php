@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('description');
             $table->string('location')->nullable();
             $table->dateTime('scheduled_at');
-            $table->enum('status', ['scheduled', 'completed', 'cancelled'])->default('scheduled');
+            $table->enum('status', ['new', 'completed', 'rejected'])->default('new');
             $table->text('completion_notes')->nullable();
             $table->foreignId('assigned_to')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamp('completed_at')->nullable();

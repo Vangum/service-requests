@@ -38,11 +38,11 @@ class AuthController extends Controller
 
         if (auth()->attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect()->route('ticketsIndex');
+            return redirect()->route('home');
         }
 
         return redirect()->back()->withErrors([
-            'username' => 'The provided credentials do not match our records.',
+            'username' => 'Неверный логин или пароль.',
         ]);
     }
 

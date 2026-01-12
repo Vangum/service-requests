@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import UserInfo from '@/components/UserInfo.vue';
-import {DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,} from '@/components/ui/dropdown-menu';
+import {DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,} from '@/components/ui/dropdown-menu';
 import type {User} from '@/types';
 import {Link, router} from '@inertiajs/vue3';
-import {LogOut, Settings} from 'lucide-vue-next';
+import {LogOut, } from 'lucide-vue-next';
 import {logout} from "@/routes";
 
 interface Props {
@@ -23,22 +23,21 @@ defineProps<Props>();
             <UserInfo :user="user" :show-email="true" />
         </div>
     </DropdownMenuLabel>
-    <DropdownMenuSeparator />
-    <DropdownMenuGroup>
-        <DropdownMenuItem :as-child="true">
-            <Link class="block w-full" href="/" prefetch as="button">
-                <Settings class="mr-2 h-4 w-4" />
-                Настройки
-            </Link>
-        </DropdownMenuItem>
-    </DropdownMenuGroup>
+<!--    <DropdownMenuSeparator />-->
+<!--    <DropdownMenuGroup>-->
+<!--        <DropdownMenuItem :as-child="true">-->
+<!--            <Link class="block w-full" href="/" prefetch as="button">-->
+<!--                <Settings class="mr-2 h-4 w-4" />-->
+<!--                Настройки-->
+<!--            </Link>-->
+<!--        </DropdownMenuItem>-->
+<!--    </DropdownMenuGroup>-->
     <DropdownMenuSeparator />
     <DropdownMenuItem :as-child="true">
         <Link
             class="block w-full"
             :href="logout()"
             @click="handleLogout"
-            as="button"
             data-test="logout-button"
         >
             <LogOut class="mr-2 h-4 w-4" />
