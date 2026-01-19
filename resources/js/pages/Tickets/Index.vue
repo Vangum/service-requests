@@ -13,9 +13,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import {Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table';
-import {Pen, Trash, MessageCircle} from 'lucide-vue-next';
+import {MessageCircle, Pen, Trash} from 'lucide-vue-next';
 import {Head, Link, router, useForm} from '@inertiajs/vue3';
-import {ticketsCreate, ticketsDestroy, ticketsEdit, ticketsComment} from "@/routes";
+import {ticketsComment, ticketsCreate, ticketsDestroy, ticketsEdit} from "@/routes";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card";
@@ -58,7 +58,7 @@ const openCommentDialog = (ticket: Ticket) => {
 
 const saveComment = () => {
     if (!selectedTicket.value) return;
-
+    
     commentForm.post(ticketsComment(selectedTicket.value.id).url, {
         preserveScroll: true,
         preserveState: true,
@@ -295,10 +295,7 @@ const saveComment = () => {
                     <DialogClose as-child>
                         <Button variant="outline">Отмена</Button>
                     </DialogClose>
-                    <Button
-                        type="submit"
-                        :disabled="commentForm.processing"
-                    >
+                    <Button type="submit" :disabled="commentForm.processing">
                         {{ selectedTicket.comment ? 'Обновить' : 'Добавить' }}
                     </Button>
                 </DialogFooter>
